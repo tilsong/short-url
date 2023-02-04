@@ -1,22 +1,13 @@
 package com.toy.shorturl.repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.toy.shorturl.domain.Url;
 
-import org.springframework.stereotype.Repository;
+public interface UrlRepository {
+    int insert(String newUrl);
 
-@Repository
-public class UrlRepository {
+    void update(int index, String encodedUrl);
 
-	List<String> urlList = new ArrayList<>();
+    Url findOneByIndex(int index);
 
-	// 생성
-	public void insertUrl(String newUrl) {
-		urlList.add(newUrl);
-	}
-
-	// 찾기
-	// public String findOneUrl(String hashedUrl) {
-		// return
-	// }
+    Url findOneByUrl(String url);
 }

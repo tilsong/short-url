@@ -16,14 +16,24 @@ public class UrlController {
 
 	@Autowired
 	UrlController(UrlService url) {
-		this.urlService = new UrlService();
+		this.urlService = url;
 	}
 
-	@PostMapping("/{url}")
-	public String createUrl(@PathVariable String url) {
-		if (url != null) {
-			return urlService.addUrl(url);
-		}
-		return "잘못된 url입니다.";
+	@PostMapping("/{newUrl}")
+	public String createUrl(@PathVariable String newUrl) {
+		// filter 처리하기
+//		if (newUrl != null) {
+//			return "잘못된 url입니다.";
+//		}
+
+		return urlService.addUrl(newUrl);
 	}
+
+	@GetMapping("{encodedUrl}")
+	public String getUrl(@PathVariable String encodedUrl) {
+		// filter 처리하기 -> localhost:8080/{encodedUrl}
+
+		return urlService.findUrlByEncodedUrl(encodedUrl);
+	}
+
 }
