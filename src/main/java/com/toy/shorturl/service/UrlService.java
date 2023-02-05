@@ -6,30 +6,32 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.toy.shorturl.repository.UrlRepository;
+import com.toy.shorturl.domain.ViewUrl;
+import com.toy.shorturl.repository.Url.UrlRepository;
 import com.toy.shorturl.Module.Base62Converter;
+import com.toy.shorturl.repository.ViewUrl.ViewUrlRepository;
 
 @Slf4j
 @Service
 public class UrlService {
 	UrlRepository urlRepository;
+	ViewUrlRepository viewUrlRepository;
 
 	@Autowired
-	public UrlService(UrlRepository urlRepository) {
+	public UrlService(UrlRepository urlRepository, ViewUrlRepository viewUrlRepository) {
 		this.urlRepository = urlRepository;
+		this.viewUrlRepository = viewUrlRepository;
 	}
 
-	// TODO: addUrl, findUrl 추가
 	// @Transactional
 	public String addUrl(String url) {
-		log.info("add Url");
+		log.info("add Url.");
 
 		String encodedUrl = null;
-		// 2개의 트랜잭션 -> insertUrl, findUrl
 
-		// insert
 		try {
-			int index = urlRepository.insert(url);
+			Url newUrl = new Url(url);
+			int index = urlRepository.save(newUrl);
 
 			encodedUrl = Base62Converter.intTobase62(index);
 
@@ -38,19 +40,19 @@ public class UrlService {
 			log.error(re.getMessage());
 		}
 
-		// findUrl
 		Url newUrl = urlRepository.findOneByUrl(url);
 
 		return newUrl.getEncodedUrl();
 	}
 
 	public String findUrlByEncodedUrl(String encodedUrl) {
-		log.info("findurl");
+		log.info("find url.");
 
 		Url url = null;
+		int index = 0;
 
 		try {
-			int index = Base62Converter.base62ToInt(encodedUrl);
+			index = Base62Converter.base62ToInt(encodedUrl);
 
 			url = urlRepository.findOneByIndex(index);
 		} catch (RuntimeException re) {
@@ -58,9 +60,21 @@ public class UrlService {
 			return null;
 		}
 
-		// 조회 수 모듈 넣기
+		// 조회 수 추가
+		ViewUrl viewUrl = new ViewUrl(index);
+		viewUrlRepository.save(viewUrl);
 
 		return url.getUrl();
+	}
+
+	public int getViewCount(String encodedUrl) {
+		log.info("get viewCount.");
+
+		int index = Base62Converter.base62ToInt(encodedUrl);
+
+		int count = viewUrlRepository.countById(index);
+
+		return count;
 	}
 
 }

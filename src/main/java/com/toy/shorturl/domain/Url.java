@@ -8,6 +8,10 @@ public class Url {
         this.url = url;
     }
 
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
     public void setEncodedUrl(String encodedUrl) {
         this.encodedUrl = encodedUrl;
     }
@@ -19,5 +23,11 @@ public class Url {
     public String getEncodedUrl() {
         return encodedUrl;
     }
+
+    @Override
+    public String toString() {
+        return "url='" + url + ", encodedUrl='" + encodedUrl;
+    }
+
 
 }
