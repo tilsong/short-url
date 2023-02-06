@@ -79,6 +79,14 @@ public class UrlService {
 
 		int index = Base62Converter.base62ToInt(encodedUrl);
 
+		// index validation
+		try {
+			Url oneByIndex = urlRepository.findOneByIndex(index);
+		} catch (RuntimeException re) {
+			log.error(re.getMessage());
+			return -1;
+		}
+
 		int count = viewUrlRepository.countById(index);
 
 		return count;
