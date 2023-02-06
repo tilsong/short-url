@@ -23,12 +23,12 @@ public class UrlService {
 		this.viewUrlRepository = viewUrlRepository;
 	}
 
-	// @Transactional
 	public String addUrl(String url) {
 		log.info("add Url.");
 
 		String encodedUrl = null;
 
+		// save transaction
 		try {
 			Url newUrl = new Url(url);
 			int index = urlRepository.save(newUrl);
@@ -40,7 +40,14 @@ public class UrlService {
 			log.error(re.getMessage());
 		}
 
-		Url newUrl = urlRepository.findOneByUrl(url);
+		// find transaction
+		Url newUrl;
+		try {
+			newUrl = urlRepository.findOneByUrl(url);
+		} catch (RuntimeException re) {
+			log.error(re.getMessage());
+			return null;
+		}
 
 		return newUrl.getEncodedUrl();
 	}
@@ -76,5 +83,4 @@ public class UrlService {
 
 		return count;
 	}
-
 }

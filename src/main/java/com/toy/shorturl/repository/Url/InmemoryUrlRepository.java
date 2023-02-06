@@ -14,22 +14,26 @@ public class InmemoryUrlRepository implements UrlRepository{
 	Object insertLock = new Object();
 	List<Url> urlList = new ArrayList<>();
 
-	public int save(Url url) {
+	public int save(Url url) throws RuntimeException {
 		int id = 0;
 
 		String defaultUrl = url.getUrl();
 
-		synchronized (insertLock) { // url 중복 피하기
-			urlList.stream()
+		synchronized (insertLock) {
+			// url 중복이면 throw
+			boolean isPresent = urlList.stream()
 				.filter(e -> e.getUrl().equals(defaultUrl))
-				.collect(Collectors.toList());
-				// .orElseThrow(() -> new RuntimeException("이미 존재하는 URL 입니다."));
+				.findFirst() // 있으면 에러 방출
+				.isPresent();
+			if (isPresent) {
+				throw new RuntimeException("이미 존재하는 URL입니다.");
+			}
 
 			urlList.add(url);
 			id = urlList.size() - 1;
 		}
 
-		log.info("Url inserted. " + "id: " + id + " " + url);
+		log.info("Url saved. " + "id: " + id + " " + url);
 
 		return id;
 	}
@@ -58,18 +62,21 @@ public class InmemoryUrlRepository implements UrlRepository{
 	 }
 
 	public Url findOneByUrl(String url) throws RuntimeException {
-		return urlList.stream()
-			.filter(e -> e.getUrl() == url)
-			.findFirst()
+		Url findUrl = urlList.stream()
+			.filter(e -> e.getUrl().equals(url))
+			.findFirst() // empty -> orElseThrow, isPresent -> return value;
 			.orElseThrow(() -> new RuntimeException("존재하지 않는 URL입니다."));
+		return findUrl;
 	}
 
 	public List<Url> findAll() {
 		return urlList;
 	}
 
-	public void delete(int index) {
-		Url url = findOneByIndex(index);
+	public void delete(int index) throws RuntimeException {
+		Url url;
+
+		url = findOneByIndex(index);
 
 		url.setEncodedUrl("");
 		url.setUrl("");
