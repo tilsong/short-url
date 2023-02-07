@@ -40,8 +40,12 @@ public class UrlController {
 		log.info("create Url. request url: " + urlRequest.url());
 
 		String encodedUrl = urlService.addUrl(urlRequest.url());
-		UrlResponse dto = new UrlResponse(encodedUrl);
-		return new ResponseEntity<>(dto, HttpStatus.CREATED);
+		if (encodedUrl != null) {
+			UrlResponse dto = new UrlResponse(encodedUrl);
+			return new ResponseEntity<>(dto, HttpStatus.CREATED);
+		}
+
+		return new ResponseEntity(HttpStatus.BAD_REQUEST);
 	}
 
 	@GetMapping("/url/{encodedUrl}") // www.localhost:8080/url/{encodedUrl}
