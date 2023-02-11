@@ -1,4 +1,4 @@
-package com.toy.shorturl.Module;
+package com.toy.shorturl.module;
 
 import java.util.List;
 

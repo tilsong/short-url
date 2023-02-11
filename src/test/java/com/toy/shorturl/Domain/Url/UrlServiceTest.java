@@ -5,23 +5,19 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import com.toy.shorturl.Module.Base62Converter;
+import com.toy.shorturl.module.Base62Converter;
 import com.toy.shorturl.domain.Url;
 import com.toy.shorturl.repository.Url.InmemoryUrlRepository;
 import com.toy.shorturl.repository.Url.UrlRepository;
-import com.toy.shorturl.repository.ViewUrl.InmemoryViewUrlRepository;
-import com.toy.shorturl.repository.ViewUrl.ViewUrlRepository;
 import com.toy.shorturl.service.UrlService;
 
 public class UrlServiceTest {
 	UrlRepository urlRepository = new InmemoryUrlRepository();
-	ViewUrlRepository viewUrlRepository = new InmemoryViewUrlRepository();
-	UrlService urlService = new UrlService(urlRepository, viewUrlRepository);
+	UrlService urlService = new UrlService(urlRepository);
 
 	@AfterEach
 	void afterEach() {
 		urlRepository.clearStore();
-		viewUrlRepository.clearStore();
 	}
 
 	@Test
@@ -55,11 +51,8 @@ public class UrlServiceTest {
 		}
 
 		// then
-		int countByEncodedUrl = urlService.getViewCount(encodedUrl);
+		long countByEncodedUrl = urlService.getViewCount(encodedUrl);
 
 		assertThat(countByEncodedUrl).isEqualTo(viewCounting);
 	}
-
-
-
 }

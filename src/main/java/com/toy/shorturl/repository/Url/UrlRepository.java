@@ -8,6 +8,8 @@ public interface UrlRepository {
 
     void update(int index, String encodedUrl);
 
+    void UpdateViewCount(int index);
+
     Url findOneByIndex(int index);
 
     Url findOneByUrl(String url);

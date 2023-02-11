@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import com.toy.shorturl.Module.Base62Converter;
+import com.toy.shorturl.module.Base62Converter;
 import com.toy.shorturl.domain.Url;
 import com.toy.shorturl.repository.Url.InmemoryUrlRepository;
 import com.toy.shorturl.repository.Url.UrlRepository;

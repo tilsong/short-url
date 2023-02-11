@@ -39,13 +39,8 @@ public class UrlController {
 	public ResponseEntity<UrlResponse> createUrl(@Valid @RequestBody UrlRequest urlRequest) {
 		log.info("create Url. request url: " + urlRequest.url());
 
-		String encodedUrl = urlService.addUrl(urlRequest.url());
-		if (encodedUrl != null) {
-			UrlResponse dto = new UrlResponse(encodedUrl);
-			return new ResponseEntity<>(dto, HttpStatus.CREATED);
-		}
-
-		return new ResponseEntity(HttpStatus.BAD_REQUEST);
+		var encodedUrl = urlService.addUrl(urlRequest.url());
+		return new ResponseEntity<>(new UrlResponse(encodedUrl), HttpStatus.CREATED);
 	}
 
 	@GetMapping("/url/{encodedUrl}") // www.localhost:8080/url/{encodedUrl}
@@ -54,15 +49,11 @@ public class UrlController {
 	) throws URISyntaxException {
 		log.info("get Url. request encodedUrl: " + encodedUrl);
 
-		String decodedUrl = urlService.findUrlByEncodedUrl(encodedUrl);
-		if (decodedUrl != null) {
-			HttpHeaders httpHeaders = new HttpHeaders();
-			httpHeaders.setLocation(new URI(decodedUrl));
+		var decodedUrl = urlService.findUrlByEncodedUrl(encodedUrl);
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setLocation(new URI(decodedUrl));
 
-			return new ResponseEntity(httpHeaders, HttpStatus.MOVED_PERMANENTLY);
-		}
-
-		return new ResponseEntity(HttpStatus.BAD_REQUEST);
+		return new ResponseEntity(httpHeaders, HttpStatus.MOVED_PERMANENTLY);
 	}
 
 	@GetMapping("/viewcount/{encodedUrl}") // www.localhost:8080/viewcount/{encodedUrl}
@@ -71,13 +62,8 @@ public class UrlController {
 	) {
 		log.info("get ViewCountByEncodedUrl. request encodedUrl: " + encodedUrl);
 
-		int viewCount = urlService.getViewCount(encodedUrl);
-		if(viewCount != -1) {
-			ViewcountResponse dto = new ViewcountResponse(encodedUrl, viewCount);
-			return new ResponseEntity(dto, HttpStatus.OK);
-		};
-
-		return new ResponseEntity(HttpStatus.BAD_REQUEST);
+		var viewCount = urlService.getViewCount(encodedUrl);
+		return new ResponseEntity(new ViewcountResponse(encodedUrl, viewCount), HttpStatus.OK);
 	}
 
 	@GetMapping("/")

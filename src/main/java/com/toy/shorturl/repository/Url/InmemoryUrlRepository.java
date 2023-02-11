@@ -2,9 +2,12 @@ package com.toy.shorturl.repository.Url;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.NoSuchElementException;
 
 import com.toy.shorturl.domain.Url;
+import com.toy.shorturl.exception.type.DuplicateUrlException;
+import com.toy.shorturl.exception.type.NoSuchUrlException;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -14,19 +17,18 @@ public class InmemoryUrlRepository implements UrlRepository{
 	Object insertLock = new Object();
 	List<Url> urlList = new ArrayList<>();
 
-	public int save(Url url) throws RuntimeException {
+	public int save(Url url) throws DuplicateUrlException {
 		int id = 0;
 
-		String defaultUrl = url.getUrl();
+		var defaultUrl = url.getUrl();
 
 		synchronized (insertLock) {
 			// url 중복이면 throw
 			boolean isPresent = urlList.stream()
 				.filter(e -> e.getUrl().equals(defaultUrl))
-				.findFirst() // 있으면 에러 방출
-				.isPresent();
+				.findFirst().isPresent();
 			if (isPresent) {
-				throw new RuntimeException("이미 존재하는 URL입니다.");
+				throw new DuplicateUrlException("이미 존재하는 Url입니다.");
 			}
 
 			urlList.add(url);
@@ -39,7 +41,7 @@ public class InmemoryUrlRepository implements UrlRepository{
 	}
 
 	public void update(int index, String encodedUrl) {
-		Url url = findOneByIndex(index);
+		var url = findOneByIndex(index);
 
 		if (url.getEncodedUrl() == null) {
 			url.setEncodedUrl(encodedUrl);
@@ -48,25 +50,31 @@ public class InmemoryUrlRepository implements UrlRepository{
 		log.info("Url updated. " + "id: " + index + " " + url);
 	}
 
-	 public Url findOneByIndex(int index) throws RuntimeException {
+	public void UpdateViewCount(int index) {
+		var url = findOneByIndex(index);
+		url.increaseViewCount();
+
+		log.info("Url viewCount updated. " + "id: " + index + " " + url);
+	}
+
+	 public Url findOneByIndex(int index) throws NoSuchUrlException {
 		if (index >= urlList.size()) {
-			throw new RuntimeException("존재하지 않는 URL입니다.");
+			throw new NoSuchUrlException("존재하지 않는 URL입니다.");
 		}
 
-		Url url = urlList.get(index);
+		var url = urlList.get(index);
 		if (url.getUrl().equals("")) {
-			throw new RuntimeException("존재하지 않는 URL입니다.");
+			throw new NoSuchUrlException("존재하지 않는 URL입니다.");
 		}
 
 		return url;
 	 }
 
-	public Url findOneByUrl(String url) throws RuntimeException {
-		Url findUrl = urlList.stream()
+	public Url findOneByUrl(String url) throws NoSuchElementException {
+		return urlList.stream()
 			.filter(e -> e.getUrl().equals(url))
-			.findFirst() // empty -> orElseThrow, isPresent -> return value;
-			.orElseThrow(() -> new RuntimeException("존재하지 않는 URL입니다."));
-		return findUrl;
+			.findFirst()
+			.orElseThrow(() -> new NoSuchUrlException("존재하지 않는 URL입니다."));
 	}
 
 	public List<Url> findAll() {
@@ -80,6 +88,7 @@ public class InmemoryUrlRepository implements UrlRepository{
 
 		url.setEncodedUrl("");
 		url.setUrl("");
+		log.info("Url deleted. " + "id: " + index);
 	}
 
 	public void clearStore() {

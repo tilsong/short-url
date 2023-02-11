@@ -6,47 +6,37 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.toy.shorturl.domain.ViewUrl;
+import com.toy.shorturl.exception.type.DuplicateUrlException;
+import com.toy.shorturl.exception.type.NoSuchUrlException;
 import com.toy.shorturl.repository.Url.UrlRepository;
-import com.toy.shorturl.Module.Base62Converter;
-import com.toy.shorturl.repository.ViewUrl.ViewUrlRepository;
+import com.toy.shorturl.module.Base62Converter;
 
 @Slf4j
 @Service
 public class UrlService {
 	UrlRepository urlRepository;
-	ViewUrlRepository viewUrlRepository;
 
 	@Autowired
-	public UrlService(UrlRepository urlRepository, ViewUrlRepository viewUrlRepository) {
+	public UrlService(UrlRepository urlRepository) {
 		this.urlRepository = urlRepository;
-		this.viewUrlRepository = viewUrlRepository;
 	}
 
 	public String addUrl(String url) {
 		log.info("add Url.");
 
-		String encodedUrl = null;
-
-		// save transaction
-		try {
-			Url newUrl = new Url(url);
-			int index = urlRepository.save(newUrl);
-
-			encodedUrl = Base62Converter.intTobase62(index);
-
-			urlRepository.update(index, encodedUrl);
-		} catch (RuntimeException re) {
-			log.error(re.getMessage());
-		}
-
-		// find transaction
 		Url newUrl;
+
 		try {
+			var savingUrl = new Url(url);
+			int index = urlRepository.save(savingUrl);
+
+			var encodedUrl = Base62Converter.intTobase62(index);
+			urlRepository.update(index, encodedUrl);
+
 			newUrl = urlRepository.findOneByUrl(url);
-		} catch (RuntimeException re) {
-			log.error(re.getMessage());
-			return null;
+		} catch (DuplicateUrlException | NoSuchUrlException e) {
+			log.error(e.getMessage());
+			throw e;
 		}
 
 		return newUrl.getEncodedUrl();
@@ -56,39 +46,35 @@ public class UrlService {
 		log.info("find url.");
 
 		Url url = null;
-		int index = 0;
 
 		try {
-			index = Base62Converter.base62ToInt(encodedUrl);
+			int index = Base62Converter.base62ToInt(encodedUrl);
 
 			url = urlRepository.findOneByIndex(index);
-		} catch (RuntimeException re) {
-			log.info(re.getMessage());
-			return null;
-		}
 
-		// 조회 수 추가
-		ViewUrl viewUrl = new ViewUrl(index);
-		viewUrlRepository.save(viewUrl);
+			urlRepository.UpdateViewCount(index);
+		} catch (NoSuchUrlException e) {
+			log.info(e.getMessage());
+			throw e;
+		}
 
 		return url.getUrl();
 	}
 
-	public int getViewCount(String encodedUrl) {
+	public long getViewCount(String encodedUrl) {
 		log.info("get viewCount.");
 
+		long viewCount = 0;
 		int index = Base62Converter.base62ToInt(encodedUrl);
 
-		// index validation
 		try {
-			Url oneByIndex = urlRepository.findOneByIndex(index);
-		} catch (RuntimeException re) {
-			log.error(re.getMessage());
-			return -1;
+			Url url = urlRepository.findOneByIndex(index);
+			viewCount = url.getViewCount();
+		} catch (NoSuchUrlException e) {
+			log.info(e.getMessage());
+			throw e;
 		}
 
-		int count = viewUrlRepository.countById(index);
-
-		return count;
+		return viewCount;
 	}
 }
