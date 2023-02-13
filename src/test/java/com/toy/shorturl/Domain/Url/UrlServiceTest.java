@@ -10,10 +10,12 @@ import com.toy.shorturl.domain.Url;
 import com.toy.shorturl.repository.Url.InmemoryUrlRepository;
 import com.toy.shorturl.repository.Url.UrlRepository;
 import com.toy.shorturl.service.UrlService;
+import com.toy.shorturl.service.ViewCountService;
 
 public class UrlServiceTest {
 	UrlRepository urlRepository = new InmemoryUrlRepository();
-	UrlService urlService = new UrlService(urlRepository);
+	ViewCountService viewCountService = new ViewCountService(urlRepository);
+	UrlService urlService = new UrlService(viewCountService, urlRepository);
 
 	@AfterEach
 	void afterEach() {

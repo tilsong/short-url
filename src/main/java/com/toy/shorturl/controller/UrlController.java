@@ -7,7 +7,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,18 +21,16 @@ import com.toy.shorturl.service.UrlService;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping
 public class UrlController {
-	UrlService urlService;
-
-	@Autowired
-	UrlController(UrlService urlService) {
-		this.urlService = urlService;
-	}
+	private final UrlService urlService;
 
 	@PostMapping("/url") // www.localhost:8080/url , { "encodedUrl": "1s" }
 	public ResponseEntity<UrlResponse> createUrl(@Valid @RequestBody UrlRequest urlRequest) {
@@ -45,7 +42,8 @@ public class UrlController {
 
 	@GetMapping("/url/{encodedUrl}") // www.localhost:8080/url/{encodedUrl}
 	public ResponseEntity redirectUrlByEncodedUrl(
-		@PathVariable("encodedUrl") @NotBlank(message = "입력 값이 존재하지 않습니다.") String encodedUrl
+		@PathVariable("encodedUrl") @NotBlank(message = "입력 값이 존재하지 않습니다.")
+		@Pattern(regexp = "^[a-zA-Z0-9]*$", message = "잘못된 입력 값입니다.") String encodedUrl
 	) throws URISyntaxException {
 		log.info("get Url. request encodedUrl: " + encodedUrl);
 
@@ -58,7 +56,8 @@ public class UrlController {
 
 	@GetMapping("/viewcount/{encodedUrl}") // www.localhost:8080/viewcount/{encodedUrl}
 	public ResponseEntity<ViewcountResponse> getViewCountByEncodedUrl(
-		@PathVariable("encodedUrl") @NotBlank(message = "입력 값이 존재하지 않습니다.") String encodedUrl
+		@PathVariable("encodedUrl") @NotBlank(message = "입력 값이 존재하지 않습니다.")
+		@Pattern(regexp = "^[a-zA-Z0-9]*$", message = "잘못된 입력 값입니다.") String encodedUrl
 	) {
 		log.info("get ViewCountByEncodedUrl. request encodedUrl: " + encodedUrl);
 

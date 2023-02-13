@@ -8,7 +8,7 @@ public interface UrlRepository {
 
     void update(int index, String encodedUrl);
 
-    void UpdateViewCount(int index);
+    void updateViewCount(int index, long currentViewCount);
 
     Url findOneByIndex(int index);
 

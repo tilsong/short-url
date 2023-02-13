@@ -13,10 +13,6 @@ public class Url {
         this.url = url;
     }
 
-    public void increaseViewCount() {
-        this.viewCount++;
-    }
-
     @Override
     public String toString() {
         return "url='" + url + ", encodedUrl='" + encodedUrl;

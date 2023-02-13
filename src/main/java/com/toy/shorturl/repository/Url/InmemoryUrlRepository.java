@@ -14,8 +14,8 @@ import org.springframework.stereotype.Repository;
 @Slf4j
 @Repository
 public class InmemoryUrlRepository implements UrlRepository{
-	Object insertLock = new Object();
-	List<Url> urlList = new ArrayList<>();
+	private final Object insertLock = new Object();
+	private final List<Url> urlList = new ArrayList<>();
 
 	public int save(Url url) throws DuplicateUrlException {
 		int id = 0;
@@ -50,9 +50,9 @@ public class InmemoryUrlRepository implements UrlRepository{
 		log.info("Url updated. " + "id: " + index + " " + url);
 	}
 
-	public void UpdateViewCount(int index) {
+	public void updateViewCount(int index, long viewCount) {
 		var url = findOneByIndex(index);
-		url.increaseViewCount();
+		url.setViewCount(viewCount);
 
 		log.info("Url viewCount updated. " + "id: " + index + " " + url);
 	}
@@ -88,6 +88,7 @@ public class InmemoryUrlRepository implements UrlRepository{
 
 		url.setEncodedUrl("");
 		url.setUrl("");
+
 		log.info("Url deleted. " + "id: " + index);
 	}
 
