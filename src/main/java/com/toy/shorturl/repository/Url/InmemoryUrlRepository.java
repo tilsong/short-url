@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 
 @Slf4j
 @Repository
-public class InmemoryUrlRepository implements UrlRepository{
+public class InmemoryUrlRepository implements UrlRepository {
 	private final Object insertLock = new Object();
 	private final List<Url> urlList = new ArrayList<>();
 
@@ -21,15 +21,14 @@ public class InmemoryUrlRepository implements UrlRepository{
 		int id = 0;
 
 		var defaultUrl = url.getUrl();
-
+			
+		// 위치 수정 보류
 		synchronized (insertLock) {
 			// url 중복이면 throw
-			boolean isPresent = urlList.stream()
+			urlList.stream()
 				.filter(e -> e.getUrl().equals(defaultUrl))
-				.findFirst().isPresent();
-			if (isPresent) {
-				throw new DuplicateUrlException("이미 존재하는 Url입니다.");
-			}
+				.findFirst()
+				.ifPresent(m -> {throw new DuplicateUrlException("이미 존재하는 Url입니다");});
 
 			urlList.add(url);
 			id = urlList.size() - 1;
@@ -40,21 +39,15 @@ public class InmemoryUrlRepository implements UrlRepository{
 		return id;
 	}
 
-	public void update(int index, String encodedUrl) {
-		var url = findOneByIndex(index);
 
-		if (url.getEncodedUrl() == null) {
-			url.setEncodedUrl(encodedUrl);
-		}
+	public void update(int index, Url url) {
+		var getUrl = findOneByIndex(index);
+
+		getUrl.setUrl(url.getUrl());
+		getUrl.setEncodedUrl(url.getEncodedUrl());
+		getUrl.setViewCount(url.getViewCount());
 
 		log.info("Url updated. " + "id: " + index + " " + url);
-	}
-
-	public void updateViewCount(int index, long viewCount) {
-		var url = findOneByIndex(index);
-		url.setViewCount(viewCount);
-
-		log.info("Url viewCount updated. " + "id: " + index + " " + url);
 	}
 
 	 public Url findOneByIndex(int index) throws NoSuchUrlException {
@@ -70,9 +63,9 @@ public class InmemoryUrlRepository implements UrlRepository{
 		return url;
 	 }
 
-	public Url findOneByUrl(String url) throws NoSuchElementException {
+	public Url findOneByEncodedUrl(String encodedUrl) throws NoSuchElementException {
 		return urlList.stream()
-			.filter(e -> e.getUrl().equals(url))
+			.filter(e -> e.getEncodedUrl().equals(encodedUrl))
 			.findFirst()
 			.orElseThrow(() -> new NoSuchUrlException("존재하지 않는 URL입니다."));
 	}

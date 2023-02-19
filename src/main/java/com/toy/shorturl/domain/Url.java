@@ -1,17 +1,14 @@
 package com.toy.shorturl.domain;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Builder @Getter @Setter
 public class Url {
     String url;
-    String encodedUrl;
-    long viewCount;
-
-    public Url(String url) {
-        this.url = url;
-    }
+    @Builder.Default String encodedUrl = "";
+    @Builder.Default long viewCount = 0;
 
     @Override
     public String toString() {

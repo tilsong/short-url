@@ -6,13 +6,11 @@ public interface UrlRepository {
 
     int save(Url url);
 
-    void update(int index, String encodedUrl);
+    void update(int index, Url url);
 
-    void updateViewCount(int index, long currentViewCount);
+    Url findOneByEncodedUrl(String encodedUrl);
 
     Url findOneByIndex(int index);
-
-    Url findOneByUrl(String url);
 
     void clearStore();
 }
